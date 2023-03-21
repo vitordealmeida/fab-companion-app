@@ -62,17 +62,19 @@ public class MatchController : MonoBehaviour
     {
         if (_playerDirty)
         {
+            var damage = _playerLifePoints - _playerLifePointsConsolidated;
             playerLifeTotal.SetText(_playerLifePoints.ToString());
             playerDamage.alpha = 1;
-            playerDamage.text = (_playerLifePoints - _playerLifePointsConsolidated).ToString();
+            playerDamage.text = damage <= 0 ? damage.ToString() : $"+{damage}";
             playerDamage.DOKill();
         }
 
         if (_enemyDirty)
         {
+            var damage = _enemyLifePoints - _enemyLifePointsConsolidated;
             enemyLifeTotal.SetText(_enemyLifePoints.ToString());
             enemyDamage.alpha = 1;
-            enemyDamage.text = (_enemyLifePoints - _enemyLifePointsConsolidated).ToString();
+            enemyDamage.text = damage <= 0 ? damage.ToString() : $"+{damage}";
             enemyDamage.DOKill();
         }
         
