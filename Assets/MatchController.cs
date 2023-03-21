@@ -1,40 +1,81 @@
 using System;
 using System.Collections;
+using DefaultNamespace;
+using DG.Tweening;
+using Domain;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MatchController : MonoBehaviour
 {
     public TMP_Text playerLifeTotal;
     public TMP_Text enemyLifeTotal;
+    public TMP_Text playerDamage;
+    public TMP_Text enemyDamage;
     public GameObject confirmExitWindow;
     public GameObject victoryWindow;
     public GameObject defeatWindow;
+    public Image playerBackground;
+    public Image enemyBackground;
+    public ClockView clock;
     
     private int _playerLifePoints;
     private int _enemyLifePoints;
+    private int _playerLifePointsConsolidated;
+    private int _enemyLifePointsConsolidated;
+    private bool _playerDirty;
+    private bool _enemyDirty;
+    
     private Action _matchFinishedListener;
-
     private Coroutine _consolidateLifeChange;
     
-    public void StartMatch(int playerStartLife, int enemyStartLife, Action onMatchFinished)
+    public void StartMatch(MatchConfig matchConfig, Action onMatchFinished)
     {
         confirmExitWindow.SetActive(false);
         victoryWindow.SetActive(false);
         defeatWindow.SetActive(false);
         
-        _playerLifePoints = playerStartLife;
-        _enemyLifePoints = enemyStartLife;
+        _playerLifePoints = matchConfig.player.lifePoints;
+        _playerLifePointsConsolidated = _playerLifePoints;
+        _enemyLifePoints = matchConfig.opponent.lifePoints;
+        _enemyLifePointsConsolidated = _enemyLifePoints;
         _matchFinishedListener = onMatchFinished;
+
+        playerDamage.alpha = 0;
+        enemyDamage.alpha = 0;
+        
+        playerBackground.sprite = matchConfig.player.backgroundImage;
+        playerBackground.color = matchConfig.player.alternativeColor;
+        enemyBackground.sprite = matchConfig.opponent.backgroundImage;
+        enemyBackground.color = matchConfig.opponent.alternativeColor;
+        
+        clock.StartClock(matchConfig.MatchDuration, () =>
+        {
+            Debug.Log("Time's up!");
+        });
         
         RefreshLifeTotals();
     }
 
     private void RefreshLifeTotals()
     {
-        playerLifeTotal.SetText(_playerLifePoints.ToString());
-        enemyLifeTotal.SetText(_enemyLifePoints.ToString());
+        if (_playerDirty)
+        {
+            playerLifeTotal.SetText(_playerLifePoints.ToString());
+            playerDamage.alpha = 1;
+            playerDamage.text = (_playerLifePoints - _playerLifePointsConsolidated).ToString();
+            playerDamage.DOKill();
+        }
 
+        if (_enemyDirty)
+        {
+            enemyLifeTotal.SetText(_enemyLifePoints.ToString());
+            enemyDamage.alpha = 1;
+            enemyDamage.text = (_enemyLifePoints - _enemyLifePointsConsolidated).ToString();
+            enemyDamage.DOKill();
+        }
+        
         if (_consolidateLifeChange != null)
         {
             StopCoroutine(_consolidateLifeChange);
@@ -46,6 +87,12 @@ public class MatchController : MonoBehaviour
     private IEnumerator ConsolidateLifeChange()
     {
         yield return new WaitForSecondsRealtime(2f);
+        playerDamage.DOFade(0, 1f);
+        enemyDamage.DOFade(0, 1f);
+        _playerDirty = false;
+        _enemyDirty = false;
+        _enemyLifePointsConsolidated = _enemyLifePoints;
+        _playerLifePointsConsolidated = _playerLifePoints;
         if (_playerLifePoints <= 0)
         {
             defeatWindow.SetActive(true);
@@ -73,24 +120,28 @@ public class MatchController : MonoBehaviour
 
     public void OnPlayerIncreaseLife()
     {
+        _playerDirty = true;
         _playerLifePoints += 1;
         RefreshLifeTotals();
     }
 
     public void OnPlayerDecreaseLife()
     {
+        _playerDirty = true;
         _playerLifePoints -= 1;
         RefreshLifeTotals();
     }
 
     public void OnEnemyIncreaseLife()
     {
+        _enemyDirty = true;
         _enemyLifePoints += 1;
         RefreshLifeTotals();
     }
 
     public void OnEnemyDecreaseLife()
     {
+        _enemyDirty = true;
         _enemyLifePoints -= 1;
         RefreshLifeTotals();
     }
