@@ -147,4 +147,9 @@ public class MatchController : MonoBehaviour
         _enemyLifePoints -= 1;
         RefreshLifeTotals();
     }
+
+    public void OnMoreInfoClicked()
+    {
+        Application.OpenURL("https://fabrary.net/decks/01GVQZ59ZD70FC7X436HQ0NPGZ");
+    } 
 }

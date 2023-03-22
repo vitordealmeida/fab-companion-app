@@ -59,6 +59,7 @@ public class ApplicationController : MonoBehaviour
     public void OnFabraryIdChanged(string fabraryId)
     {
         loadDeck.interactable = !string.IsNullOrEmpty(fabraryId);
+        Debug.Log($"Fabrary id changed to {fabraryId}, button interactable = {loadDeck.interactable}");
     }
 
     public void LoadFabraryDeck()
@@ -80,15 +81,7 @@ public class ApplicationController : MonoBehaviour
 
     private void OnApplicationPause(bool pauseStatus)
     {
-        if (pauseStatus == false && _openingExternalLinkPlayer1 || _openingExternalLinkPlayer2)
-        {
-            ShowPasteFabraryLinkWindow();
-        }
-    }
-
-    private void OnApplicationFocus(bool hasFocus)
-    {
-        if (hasFocus && _openingExternalLinkPlayer1 || _openingExternalLinkPlayer2)
+        if (pauseStatus == false && (_openingExternalLinkPlayer1 || _openingExternalLinkPlayer2))
         {
             ShowPasteFabraryLinkWindow();
         }
