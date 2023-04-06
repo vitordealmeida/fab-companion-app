@@ -2,6 +2,7 @@ using System;
 
 namespace Domain
 {
+    [Serializable]
     public struct MatchConfig
     {
         public HeroConfig player;

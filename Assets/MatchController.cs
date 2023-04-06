@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using DefaultNamespace;
 using DG.Tweening;
 using Domain;
@@ -26,11 +27,12 @@ public class MatchController : MonoBehaviour
     private int _enemyLifePointsConsolidated;
     private bool _playerDirty;
     private bool _enemyDirty;
+    private MatchReport _matchReport;
     
-    private Action _matchFinishedListener;
+    private Action<MatchReport> _matchFinishedListener;
     private Coroutine _consolidateLifeChange;
     
-    public void StartMatch(MatchConfig matchConfig, Action onMatchFinished)
+    public void StartMatch(MatchConfig matchConfig, Action<MatchReport> onMatchFinished)
     {
         confirmExitWindow.SetActive(false);
         victoryWindow.SetActive(false);
@@ -56,6 +58,12 @@ public class MatchController : MonoBehaviour
         });
         
         RefreshLifeTotals();
+        _matchReport = new MatchReport
+        {
+            matchEvents = new List<MatchEvent>(),
+            matchInfo = matchConfig,
+            MatchDateTime = DateTime.Now
+        };
     }
 
     private void RefreshLifeTotals()
@@ -89,6 +97,24 @@ public class MatchController : MonoBehaviour
     private IEnumerator ConsolidateLifeChange()
     {
         yield return new WaitForSecondsRealtime(2f);
+
+        if (_playerDirty)
+        {
+            _matchReport.matchEvents.Add(new MatchEvent()
+            {
+                isPlayer = true,
+                lifeChange = _playerLifePoints - _playerLifePointsConsolidated
+            });
+        }
+        if (_enemyDirty)
+        {
+            _matchReport.matchEvents.Add(new MatchEvent()
+            {
+                isPlayer = false,
+                lifeChange = _enemyLifePoints - _enemyLifePointsConsolidated
+            });
+        }
+
         playerDamage.DOFade(0, 1f);
         enemyDamage.DOFade(0, 1f);
         _playerDirty = false;
@@ -112,7 +138,9 @@ public class MatchController : MonoBehaviour
 
     public void ConfirmQuit()
     {
-        _matchFinishedListener();
+        _matchReport.finalPlayerLife = _playerLifePointsConsolidated;
+        _matchReport.finalOpponentLife = _enemyLifePointsConsolidated;
+        _matchFinishedListener(_matchReport);
     }
 
     public void AbortQuit()
@@ -148,8 +176,8 @@ public class MatchController : MonoBehaviour
         RefreshLifeTotals();
     }
 
-    public void OnMoreInfoClicked()
+    public void OnReportClicked()
     {
-        Application.OpenURL("https://fabrary.net/decks/01GVQZ59ZD70FC7X436HQ0NPGZ");
-    } 
+        Application.OpenURL("https://fabtcg.com/accounts/profile/");
+    }
 }

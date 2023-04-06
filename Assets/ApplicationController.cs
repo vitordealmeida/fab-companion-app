@@ -10,19 +10,20 @@ public class ApplicationController : MonoBehaviour
     public Canvas preMatchCanvas;
     public MatchController matchController;
     public GameObject fabraryLinkWindow;
+    public GameObject timeLimitWindow;
     public TMP_InputField fabraryDeckId;
     public TMP_Text player1DeckName;
-    public TMP_Text player2DeckName;
     public Button loadDeck;
-    public TMP_Dropdown matchFormat;
 
     public HeroConfig generic1;
     public HeroConfig generic2;
     public HeroConfig stub1;
-    public HeroConfig stub2;
-    
-    private bool _openingExternalLinkPlayer1;
-    private bool _openingExternalLinkPlayer2;
+
+    public Toggle noTimeLimitToggle;
+    public Toggle blitzToggle;
+    public Toggle ccToggle;
+
+    private bool _openingExternalLink;
     private MatchConfig _nextMatchConfig;
 
     private void Start()
@@ -35,17 +36,13 @@ public class ApplicationController : MonoBehaviour
             opponent = generic2,
             MatchDuration = TimeSpan.MaxValue
         };
+
+        noTimeLimitToggle.isOn = true;
     }
 
     public void OpenFabraryPlayer1()
     {
-        _openingExternalLinkPlayer1 = true;
-        Application.OpenURL("https://fabrary.net/decks?tab=mine&action=copyDeckId");
-    }
-
-    public void OpenFabraryPlayer2()
-    {
-        _openingExternalLinkPlayer2 = true;
+        _openingExternalLink = true;
         Application.OpenURL("https://fabrary.net/decks?tab=mine&action=copyDeckId");
     }
 
@@ -64,15 +61,10 @@ public class ApplicationController : MonoBehaviour
 
     public void LoadFabraryDeck()
     {
-        if (_openingExternalLinkPlayer1)
+        if (_openingExternalLink)
         {
             player1DeckName.text = "(Mock) Player 1 Deck";
             _nextMatchConfig.player = stub1;
-        }
-        else if (_openingExternalLinkPlayer2)
-        {
-            player2DeckName.text = "(Mock) Player 2 Deck";
-            _nextMatchConfig.opponent = stub2;
         }
 
         fabraryDeckId.text = string.Empty;
@@ -81,7 +73,7 @@ public class ApplicationController : MonoBehaviour
 
     private void OnApplicationPause(bool pauseStatus)
     {
-        if (pauseStatus == false && (_openingExternalLinkPlayer1 || _openingExternalLinkPlayer2))
+        if (pauseStatus == false && _openingExternalLink)
         {
             ShowPasteFabraryLinkWindow();
         }
@@ -96,19 +88,48 @@ public class ApplicationController : MonoBehaviour
     public void HidePasteFabraryLinkWindow()
     {
         fabraryLinkWindow.SetActive(false);
-        _openingExternalLinkPlayer1 = false;
-        _openingExternalLinkPlayer2 = false;
+        _openingExternalLink = false;
     }
 
     public void StartMatch()
     {
+        _nextMatchConfig.MatchDuration = noTimeLimitToggle.isOn
+            ? TimeSpan.MaxValue
+            : TimeSpan.FromMinutes(blitzToggle.isOn ? 30 : 50);
+
         fabraryLinkWindow.SetActive(false);
         preMatchCanvas.gameObject.SetActive(false);
         matchCanvas.gameObject.SetActive(true);
-        matchController.StartMatch(_nextMatchConfig, () =>
+        matchController.StartMatch(_nextMatchConfig, report =>
         {
+            SaveReport(report);
             matchCanvas.gameObject.SetActive(false);
             preMatchCanvas.gameObject.SetActive(true);
         });
+    }
+
+    public void ListDecks()
+    {
+    }
+
+    public void PickMatchTime()
+    {
+        timeLimitWindow.SetActive(true);
+    }
+
+    public void CloseTimeLimitWindow()
+    {
+        timeLimitWindow.SetActive(false);
+    }
+
+    public void OnTimeLimitChanged()
+    {
+        // TODO refresh phrase
+    }
+
+    private void SaveReport(MatchReport report)
+    {
+        // TODO
+        Debug.Log("Saving report... NOT!");
     }
 }
