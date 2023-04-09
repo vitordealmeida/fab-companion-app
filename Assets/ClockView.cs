@@ -32,13 +32,22 @@ namespace DefaultNamespace
 
         private void Update()
         {
-            if (!_counting) return;
+            if (!_counting)
+            {
+                _startTime += TimeSpan.FromSeconds(Time.unscaledDeltaTime);
+                return;
+            }
             var elapsedTime = DateTime.Now - _startTime;
             SetClock(_duration == TimeSpan.MaxValue ? elapsedTime : _duration - elapsedTime);
             if (elapsedTime >= _duration)
             {
                 _countdownFinishedCallback?.Invoke();
             }
+        }
+
+        public void EnableClock(bool enabled)
+        {
+            _counting = enabled;
         }
     }
 }
