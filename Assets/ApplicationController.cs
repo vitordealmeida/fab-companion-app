@@ -15,6 +15,7 @@ public class ApplicationController : MonoBehaviour
     public TMP_Text player1DeckName;
     public Button loadDeck;
     public BottomBarView bottomBar;
+    public TMP_Text mainPhrase;
 
     public HeroConfig generic1;
     public HeroConfig generic2;
@@ -26,6 +27,9 @@ public class ApplicationController : MonoBehaviour
 
     private bool _openingExternalLink;
     private MatchConfig _nextMatchConfig;
+
+    private string _phrase =
+        @"<font-weight=""300""><color=#FFFFFF99>Match using </color><link=deck><color=#FFFFFFDE><font-weight=""500""><u>Generic Deck</u></font-weight></color><color=#FFFFFF99></link> with duration of </color><color=#FFFFFFDE><u><font-weight=""500""><link=time>{0}</link></u></color>";
 
     private void Start()
     {
@@ -39,6 +43,15 @@ public class ApplicationController : MonoBehaviour
         };
 
         noTimeLimitToggle.isOn = true;
+        PrintPhrase();
+    }
+
+    private void PrintPhrase()
+    {
+        var matchDuration = noTimeLimitToggle.isOn
+            ? "No Time Limit"
+            : blitzToggle.isOn ? "30 minutes" : "50 minutes";
+        mainPhrase.text = string.Format(_phrase, matchDuration);
     }
 
     public void OpenFabraryPlayer1()
@@ -127,7 +140,7 @@ public class ApplicationController : MonoBehaviour
 
     public void OnTimeLimitChanged()
     {
-        // TODO refresh phrase
+        PrintPhrase();
     }
 
     private void SaveReport(MatchReport report)

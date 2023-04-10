@@ -9712,6 +9712,7 @@ MonoBehaviour:
   player1DeckName: {fileID: 1148322323}
   loadDeck: {fileID: 2109512939}
   bottomBar: {fileID: 868999066}
+  mainPhrase: {fileID: 1968991647}
   generic1: {fileID: 11400000, guid: 63e1887545a894cbf8a7c14a9af05374, type: 2}
   generic2: {fileID: 11400000, guid: d9d9b648a3edc416ba0276888d22b0e6, type: 2}
   stub1: {fileID: 11400000, guid: 7fe9c827220cd47b8aba9fdbd87907df, type: 2}
