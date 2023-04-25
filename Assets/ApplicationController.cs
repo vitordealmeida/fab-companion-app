@@ -14,7 +14,6 @@ public class ApplicationController : MonoBehaviour
     public TMP_InputField fabraryDeckId;
     public TMP_Text player1DeckName;
     public Button loadDeck;
-    public BottomBarView bottomBar;
     public TMP_Text mainPhrase;
 
     public HeroConfig generic1;
@@ -114,13 +113,13 @@ public class ApplicationController : MonoBehaviour
         fabraryLinkWindow.SetActive(false);
         preMatchCanvas.gameObject.SetActive(false);
         matchCanvas.gameObject.SetActive(true);
-        bottomBar.Hide();
+        CommonCanvasController.HideBottomBar();
         matchController.StartMatch(_nextMatchConfig, report =>
         {
             SaveReport(report);
             matchCanvas.gameObject.SetActive(false);
             preMatchCanvas.gameObject.SetActive(true);
-            bottomBar.Show();
+            CommonCanvasController.ShowBottomBar();
         });
     }
 

@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 
@@ -8,19 +5,31 @@ using UnityEngine;
 public class BottomBarView : MonoBehaviour
 {
     private RectTransform _rectTransform;
-    
-    private void Awake()
+
+    protected virtual void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
     }
 
-    public void Hide()
+    public Sequence Hide(bool animate = true)
     {
-        _rectTransform.DOAnchorPosY(-_rectTransform.rect.height, .3f);
+        return DOTween.Sequence()
+            .Append(_rectTransform.DOAnchorPosY(-_rectTransform.rect.height, animate ? .3f : 0)
+                .SetEase(Ease.InQuad));
     }
 
-    public void Show(bool animate = true)
+    public Sequence Show(bool animate = true, float autoHide = 0)
     {
-        _rectTransform.DOAnchorPosY(0, animate ? .3f : 0);
+        var sequence = DOTween.Sequence();
+        sequence.Append(_rectTransform.DOAnchorPosY(0, animate ? .3f : 0)
+            .SetEase(Ease.OutQuad));
+
+        if (autoHide > 0)
+        {
+            sequence.AppendInterval(autoHide)
+                .Append(Hide());
+        }
+
+        return sequence;
     }
 }

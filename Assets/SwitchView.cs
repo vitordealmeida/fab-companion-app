@@ -25,6 +25,15 @@ public class SwitchView : MonoBehaviour, IPointerClickHandler, IPointerDownHandl
         _animator.SetBool(IsOn, isOn);
     }
 
+    public void SetState(bool switchIsOn)
+    {
+        isOn = switchIsOn;
+        if (_animator != null)
+        {
+            _animator.SetBool(IsOn, switchIsOn);
+        }
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
         Toggle();

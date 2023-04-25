@@ -11,10 +11,20 @@ namespace DefaultNamespace
         private DateTime _startTime;
         private TimeSpan _duration;
         private Action _countdownFinishedCallback;
+        private SwitchView _switch;
+        private bool _initialized;
+
+        private void Awake()
+        {
+            _switch = GetComponentInChildren<SwitchView>();
+        }
 
         private void Start()
         {
-            clockText.text = string.Empty;
+            if (!_initialized)
+            {
+                clockText.text = "0:00";
+            }
         }
 
         private void SetClock(TimeSpan time)
@@ -22,12 +32,23 @@ namespace DefaultNamespace
             clockText.text = $"{time.Minutes:D}:{time.Seconds:D2}";
         }
 
-        public void StartClock(TimeSpan matchConfigMatchDuration, Action action)
+        public void StartClock(TimeSpan matchConfigMatchDuration, Action action, bool paused = false)
         {
-            _counting = true;
+            _initialized = true;
             _startTime = DateTime.Now;
             _duration = matchConfigMatchDuration;
             _countdownFinishedCallback = action;
+            SetClock(_duration == TimeSpan.MaxValue ? TimeSpan.Zero : _duration);
+            if (paused)
+            {
+                _counting = false;
+                _switch.SetState(false);
+            }
+            else
+            {
+                _counting = true;
+                _switch.SetState(true);
+            }
         }
 
         private void Update()
@@ -45,9 +66,9 @@ namespace DefaultNamespace
             }
         }
 
-        public void EnableClock(bool enabled)
+        public void EnableClock(bool isEnabled)
         {
-            _counting = enabled;
+            _counting = isEnabled;
         }
     }
 }

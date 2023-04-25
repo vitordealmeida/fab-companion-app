@@ -55,15 +55,19 @@ public class MatchController : MonoBehaviour
         clock.StartClock(matchConfig.MatchDuration, () =>
         {
             Debug.Log("Time's up!");
-        });
+        }, true);
         
-        RefreshLifeTotals();
+        playerLifeTotal.SetText(_playerLifePoints.ToString());
+        enemyLifeTotal.SetText(_enemyLifePoints.ToString());
+        
         _matchReport = new MatchReport
         {
             matchEvents = new List<MatchEvent>(),
             matchInfo = matchConfig,
             MatchDateTime = DateTime.Now
         };
+        
+        CommonCanvasController.ShowSnackbar("Adjust life totals and start the timer!");
     }
 
     private void RefreshLifeTotals()
