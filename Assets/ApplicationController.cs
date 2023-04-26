@@ -31,11 +31,12 @@ public class ApplicationController : MonoBehaviour
     private List<MatchReport> _matchHistory;
 
     private string _phrase =
-        @"<font-weight=""300""><color=#FFFFFF99>Match using </color><link=deck><color=#FFFFFFDE><font-weight=""500""><u>Generic Deck</u></font-weight></color><color=#FFFFFF99></link> with duration of </color><color=#FFFFFFDE><u><font-weight=""500""><link=time>{0}</link></u></color>";
+        //@"<font-weight=""300""><color=#FFFFFF99>Match using </color><link=deck><color=#FFFFFFDE><font-weight=""500""><u>Generic Deck</u></font-weight></color><color=#FFFFFF99></link> with duration of </color><color=#FFFFFFDE><u><font-weight=""500""><link=time>{0}</link></u></color>";
+        @"<font-weight=""300""><color=#FFFFFF99>Match using Generic Deck with duration of </color><color=#FFFFFFDE><u><font-weight=""500""><link=time>{0}</link></u></color>";
 
     private void Start()
     {
-        _matchHistory = LoadMatchHistory();
+        _matchHistory = FetchMatchHistoryList();
         matchCanvas.gameObject.SetActive(false);
         preMatchCanvas.gameObject.SetActive(true);
         _nextMatchConfig = new MatchConfig
@@ -49,7 +50,7 @@ public class ApplicationController : MonoBehaviour
         PrintPhrase();
     }
 
-    private List<MatchReport> LoadMatchHistory()
+    private List<MatchReport> FetchMatchHistoryList()
     {
         var serializedHistory = PlayerPrefs.GetString("matchHistory");
         var history = JsonConvert.DeserializeObject<List<MatchReport>>(serializedHistory);
@@ -156,7 +157,17 @@ public class ApplicationController : MonoBehaviour
     private void SaveReport(MatchReport report)
     {
         _matchHistory.Add(report);
+        PersistMatchHistoryList();
+    }
+
+    private void PersistMatchHistoryList()
+    {
         var serializedList = JsonConvert.SerializeObject(_matchHistory);
         PlayerPrefs.SetString("matchHistory", serializedList);
+    }
+
+    public void ShowMatchesHistory()
+    {
+        
     }
 }

@@ -139,6 +139,9 @@ public class MatchController : MonoBehaviour
 
     public void ConfirmQuit()
     {
+        confirmExitWindow.SetActive(false);
+        victoryWindow.SetActive(false);
+        defeatWindow.SetActive(false);
         _matchFinishedListener(_matchReport);
     }
 
