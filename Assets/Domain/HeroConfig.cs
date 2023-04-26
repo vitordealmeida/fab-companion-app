@@ -1,7 +1,9 @@
+using System;
 using UnityEngine;
 
 namespace Domain
 {
+    [Serializable]
     public class HeroConfig: ScriptableObject
     {
         public string name;

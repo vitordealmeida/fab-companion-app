@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using DefaultNamespace;
 using DG.Tweening;
 using Domain;
@@ -20,7 +19,11 @@ public class MatchController : MonoBehaviour
     public Image playerBackground;
     public Image enemyBackground;
     public ClockView clock;
-    
+    public GameObject playerHistoryEventPrefab;
+    public GameObject opponentHistoryEventPrefab;
+    public RectTransform matchHistoryEventsParent;
+    public GameObject historyWindow;
+
     private int _playerLifePoints;
     private int _enemyLifePoints;
     private int _playerLifePointsConsolidated;
@@ -28,16 +31,17 @@ public class MatchController : MonoBehaviour
     private bool _playerDirty;
     private bool _enemyDirty;
     private MatchReport _matchReport;
-    
+
     private Action<MatchReport> _matchFinishedListener;
     private Coroutine _consolidateLifeChange;
-    
+
     public void StartMatch(MatchConfig matchConfig, Action<MatchReport> onMatchFinished)
     {
         confirmExitWindow.SetActive(false);
         victoryWindow.SetActive(false);
         defeatWindow.SetActive(false);
-        
+        historyWindow.SetActive(false);
+
         _playerLifePoints = matchConfig.player.lifePoints;
         _playerLifePointsConsolidated = _playerLifePoints;
         _enemyLifePoints = matchConfig.opponent.lifePoints;
@@ -46,27 +50,19 @@ public class MatchController : MonoBehaviour
 
         playerDamage.alpha = 0;
         enemyDamage.alpha = 0;
-        
+
         playerBackground.sprite = matchConfig.player.backgroundImage;
         playerBackground.color = matchConfig.player.alternativeColor;
         enemyBackground.sprite = matchConfig.opponent.backgroundImage;
         enemyBackground.color = matchConfig.opponent.alternativeColor;
-        
-        clock.StartClock(matchConfig.MatchDuration, () =>
-        {
-            Debug.Log("Time's up!");
-        }, true);
-        
+
+        clock.StartClock(matchConfig.MatchDuration, () => { Debug.Log("Time's up!"); }, true);
+
         playerLifeTotal.SetText(_playerLifePoints.ToString());
         enemyLifeTotal.SetText(_enemyLifePoints.ToString());
-        
-        _matchReport = new MatchReport
-        {
-            matchEvents = new List<MatchEvent>(),
-            matchInfo = matchConfig,
-            MatchDateTime = DateTime.Now
-        };
-        
+
+        _matchReport = new MatchReport(matchConfig);
+
         CommonCanvasController.ShowSnackbar("Adjust life totals and start the timer!");
     }
 
@@ -89,7 +85,7 @@ public class MatchController : MonoBehaviour
             enemyDamage.text = damage <= 0 ? damage.ToString() : $"+{damage}";
             enemyDamage.DOKill();
         }
-        
+
         if (_consolidateLifeChange != null)
         {
             StopCoroutine(_consolidateLifeChange);
@@ -104,19 +100,14 @@ public class MatchController : MonoBehaviour
 
         if (_playerDirty)
         {
-            _matchReport.matchEvents.Add(new MatchEvent()
-            {
-                isPlayer = true,
-                lifeChange = _playerLifePoints - _playerLifePointsConsolidated
-            });
+            AddMatchEvent(_matchReport.AddPlayerEvent(_playerLifePoints - _playerLifePointsConsolidated),
+                playerHistoryEventPrefab);
         }
+
         if (_enemyDirty)
         {
-            _matchReport.matchEvents.Add(new MatchEvent()
-            {
-                isPlayer = false,
-                lifeChange = _enemyLifePoints - _enemyLifePointsConsolidated
-            });
+            AddMatchEvent(_matchReport.AddOpponentEvent(_enemyLifePoints - _enemyLifePointsConsolidated),
+                opponentHistoryEventPrefab);
         }
 
         playerDamage.DOFade(0, 1f);
@@ -135,6 +126,12 @@ public class MatchController : MonoBehaviour
         }
     }
 
+    private void AddMatchEvent(MatchEvent matchEvent, GameObject historyEventPrefab)
+    {
+        var historyEvent = Instantiate(historyEventPrefab, matchHistoryEventsParent).GetComponent<HistoryEventView>();
+        historyEvent.Populate(matchEvent);
+    }
+
     public void OnExitMatch()
     {
         confirmExitWindow.SetActive(true);
@@ -142,8 +139,6 @@ public class MatchController : MonoBehaviour
 
     public void ConfirmQuit()
     {
-        _matchReport.finalPlayerLife = _playerLifePointsConsolidated;
-        _matchReport.finalOpponentLife = _enemyLifePointsConsolidated;
         _matchFinishedListener(_matchReport);
     }
 
@@ -183,5 +178,10 @@ public class MatchController : MonoBehaviour
     public void OnReportClicked()
     {
         Application.OpenURL("https://fabtcg.com/accounts/profile/");
+    }
+
+    public void OnHistoryClicked()
+    {
+        historyWindow.SetActive(true);
     }
 }

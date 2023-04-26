@@ -1,12 +1,17 @@
 using System;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace DefaultNamespace
 {
     public class ClockView: MonoBehaviour
     {
         public TMP_Text clockText;
+        public Graphic backgroundColor;
+        public Color playingColor;
+        public Color pausedColor;
         private bool _counting;
         private DateTime _startTime;
         private TimeSpan _duration;
@@ -43,11 +48,13 @@ namespace DefaultNamespace
             {
                 _counting = false;
                 _switch.SetState(false);
+                backgroundColor.color = pausedColor;
             }
             else
             {
                 _counting = true;
                 _switch.SetState(true);
+                backgroundColor.color = playingColor;
             }
         }
 
@@ -69,6 +76,7 @@ namespace DefaultNamespace
         public void EnableClock(bool isEnabled)
         {
             _counting = isEnabled;
+            backgroundColor.DOColor(isEnabled ? playingColor : pausedColor, .2f);
         }
     }
 }

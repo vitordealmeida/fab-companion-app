@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Domain;
+using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,12 +28,14 @@ public class ApplicationController : MonoBehaviour
 
     private bool _openingExternalLink;
     private MatchConfig _nextMatchConfig;
+    private List<MatchReport> _matchHistory;
 
     private string _phrase =
         @"<font-weight=""300""><color=#FFFFFF99>Match using </color><link=deck><color=#FFFFFFDE><font-weight=""500""><u>Generic Deck</u></font-weight></color><color=#FFFFFF99></link> with duration of </color><color=#FFFFFFDE><u><font-weight=""500""><link=time>{0}</link></u></color>";
 
     private void Start()
     {
+        _matchHistory = LoadMatchHistory();
         matchCanvas.gameObject.SetActive(false);
         preMatchCanvas.gameObject.SetActive(true);
         _nextMatchConfig = new MatchConfig
@@ -43,6 +47,13 @@ public class ApplicationController : MonoBehaviour
 
         noTimeLimitToggle.isOn = true;
         PrintPhrase();
+    }
+
+    private List<MatchReport> LoadMatchHistory()
+    {
+        var serializedHistory = PlayerPrefs.GetString("matchHistory");
+        var history = JsonConvert.DeserializeObject<List<MatchReport>>(serializedHistory);
+        return history ?? new List<MatchReport>();
     }
 
     private void PrintPhrase()
@@ -144,7 +155,8 @@ public class ApplicationController : MonoBehaviour
 
     private void SaveReport(MatchReport report)
     {
-        // TODO
-        Debug.Log("Saving report... NOT!");
+        _matchHistory.Add(report);
+        var serializedList = JsonConvert.SerializeObject(_matchHistory);
+        PlayerPrefs.SetString("matchHistory", serializedList);
     }
 }
